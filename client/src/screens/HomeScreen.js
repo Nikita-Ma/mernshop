@@ -1,32 +1,39 @@
 import React, {useState, useEffect} from 'react';
 import {Row, Col} from "react-bootstrap";
 import Product from "../components/Product";
-import axios from "axios";
+import {useDispatch, useSelector} from "react-redux";
+import {listProducts} from "../actions/productActions";
+import Loader from "../components/Loader";
+import Massage from "../components/Massage";
 
 const HomeScreen = () => {
-    const [products, setProducts] = useState([]);
+
+    const dispatch = useDispatch()
+    const productList = useSelector(state => state.productList)
+    const {loading, error, products} = productList
     useEffect(() => {
-        const fetchProducts = async () => {
-            const {data} = await axios.get('/api/products')
-            setProducts(data)
-        }
-        fetchProducts()
-    }, []);
+        dispatch(listProducts())
+    }, [dispatch]);
 
     return (
         <>
             <h1>Latest Products</h1>
-            <Row>
-                {
-                    products.map((product) => {
-                        return (<Col sm={12} md={6} lg={4} key={product._id}>
-                                <Product product={product}/>
-                            </Col>
+            {loading
+                ? <Loader/>
+                : error
+                    ? <Massage variant='danger'>{error}</Massage>
+                    : <Row>
+                        {
+                            products.map((product) => {
+                                return (<Col sm={12} md={6} lg={4} key={product._id}>
+                                        <Product product={product}/>
+                                    </Col>
 
-                        )
-                    })
-                }
-            </Row>
+                                )
+                            })
+                        }
+                    </Row>}
+
         </>
     )
 };
