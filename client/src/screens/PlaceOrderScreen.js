@@ -1,12 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Button, Row, Col, ListGroup, Image, Card} from "react-bootstrap";
 import {useDispatch, useSelector} from "react-redux";
 import CheckoutSteps from "../components/CheckoutSteps";
 import FormContainer from "../components/FormContainer";
 import Massage from "../components/Massage";
 import {Link} from "react-router-dom";
+import {createOrder} from "../actions/orderActions";
 
-const PlaceOrderScreen = () => {
+const PlaceOrderScreen = ({history}) => {
+    const dispatch = useDispatch()
     const cart = useSelector(state => state.cart)
     const addDecimals = (num) => {
         return (Math.round(num * 100) / 100).toFixed(2)
@@ -16,8 +18,24 @@ const PlaceOrderScreen = () => {
 
     cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPice).toFixed(2)))
     cart.totalPrice = (Number(cart.itemsPice) + Number(cart.shoppingPrice) + Number(cart.taxPrice)).toFixed(2)
-    const placeOrderHandler = () => {
+    const orderCreate = useSelector(state => state.orderCreate)
+    const {order, success, error} = orderCreate
 
+    useEffect(() => {
+        if (success) {
+            history.push(`/order/${order._id}`)
+        }
+    }, [history, success]);
+
+    const placeOrderHandler = () => {
+        dispatch(createOrder({
+            orderItems: cart.cartItems,
+            shippingAddress: cart.shippingAddress,
+            paymentMethod: cart.paymentMethod,
+            itemsPrice: cart.itemsPice,
+            taxPrice: cart.taxPrice,
+            totalPrice: cart.totalPrice,
+        }))
     }
     return (
         <>
